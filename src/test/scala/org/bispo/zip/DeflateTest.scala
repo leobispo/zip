@@ -22,4 +22,19 @@ class DeflateTest extends FlatSpec {
     assert(dtable('g') === List(true, true, true, false))
     assert(dtable('h') === List(true, true, true, true))
   }
+
+/*
+  val bs = new BitStreamWriter
+
+  bs.write(0xf,   4)
+  bs.write(0xa,   4)
+  bs.write(31,    8)
+  bs.write(0xfc,  8)
+  bs.write(0xfd,  8)
+  bs.write(0xfff, 8)
+  bs.write(0xfff, 5)
+  bs.write(List(true, true, true, false))
+*/
+//  println(bs.flush())
+
 }
