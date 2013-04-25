@@ -3,6 +3,7 @@ package org.bispo.zip
 import org.bispo.zip.Huffman._
 
 import scala.collection.mutable.HashMap
+import scala.collection.immutable.TreeMap
 import scala.collection.immutable.SortedMap
 import scala.collection.mutable.ListBuffer
 
@@ -75,9 +76,9 @@ class BitStreamReader(val arrayList: Array[Byte]) {
 }
 
 object Deflate {
-def huffmanTableToDeflateTable[T <% Ordered[T]](htable: Map[T, List[Boolean]]) : Map[T, List[Boolean]] = {
+def huffmanTableToDeflateTable[T <% Ordered[T]](htable: Map[T, List[Boolean]]) : TreeMap[T, List[Boolean]] = {
   val blCount    = HashMap.empty[Int, Int] withDefaultValue 0
-  val finalTable = HashMap.empty[T, List[Boolean]]
+  var finalTable = TreeMap.empty[T, List[Boolean]]
 
   var maxBits = 0
   htable foreach { keyValue => blCount(keyValue._2.length) += 1; maxBits = math.max(keyValue._2.length, maxBits) }
@@ -104,13 +105,13 @@ def huffmanTableToDeflateTable[T <% Ordered[T]](htable: Map[T, List[Boolean]]) :
           code = code >> 1
         }
 
-        finalTable(keyValue._1) = codeList.toList 
+        finalTable += (keyValue._1 -> codeList.toList)
         nextCode(len) = nextCode(len) + 1
       }
     }
   }
 
-  finalTable.toMap
+  finalTable
 }
 
 def compress(bytes: Array[Byte], last:Boolean = false) : List[Byte] = {
@@ -128,8 +129,6 @@ def compress(bytes: Array[Byte], last:Boolean = false) : List[Byte] = {
   }
 
   def uncompress(bytes: Array[Byte]) : Array[Byte] = {
-    val table = huffmanTable(bytes) //TODO: Must get it from the Byte array
-    val tree = reconstructTree(table)
     null
   }
 }

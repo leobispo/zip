@@ -6,7 +6,7 @@ import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Queue
 import org.bispo.zip._
 
-class HuffmanFrequency[T](var frequency: Int, var element: Option[T] = None) extends Ordered[HuffmanFrequency[T]] {
+class HuffmanFrequency[T <% Ordered[T]](var frequency: Int, var element: Option[T] = None) extends Ordered[HuffmanFrequency[T]] {
   def compare(that: HuffmanFrequency[T]) = this.frequency - that.frequency
 
   override def toString() : String = {
@@ -15,16 +15,16 @@ class HuffmanFrequency[T](var frequency: Int, var element: Option[T] = None) ext
 }
 
 object Huffman {
-  def countFrequency[T](arr: Array[T]) : List[HuffmanFrequency[T]] = {
+  def countFrequency[T <% Ordered[T]](arr: Array[T]) : List[HuffmanFrequency[T]] = {
     val hash = HashMap.empty[T, Int] withDefaultValue 0
     arr foreach { hash(_) += 1 }
 
     val list = new ListBuffer[HuffmanFrequency[T]]
     hash foreach { keyVal => list += new HuffmanFrequency[T](keyVal._2, Option(keyVal._1)) }
-    list.sortBy(_.frequency).toList
+    list.sortWith((x, y) => x.frequency < y.frequency).toList
   }
 
-  def generateTree[T](freqList: List[HuffmanFrequency[T]]) : Option[Node[HuffmanFrequency[T]]] = {
+  def generateTree[T <% Ordered[T]](freqList: List[HuffmanFrequency[T]]) : Option[Node[HuffmanFrequency[T]]] = {
     if (freqList.isEmpty)
       None
     else {
@@ -43,7 +43,12 @@ object Huffman {
           Tree.addNode(root, opt2)
           treeList += root
 
-          treeList = treeList.sortBy(_.get.value.frequency)
+          treeList = treeList.sortWith((x, y) => {
+            if (x.get.value.frequency == y.get.value.frequency)
+              y.get.value.element == None
+            else
+              x.get.value.frequency < y.get.value.frequency
+          })
           generateTreePriv()
         }
       }
@@ -53,17 +58,14 @@ object Huffman {
     }
   }
 
-  def huffmanTable[T](arr: Array[T]) : Map[T, List[Boolean]] = {
+  def huffmanTable[T <% Ordered[T]](arr: Array[T]) : Map[T, List[Boolean]] = {
     val tree = generateTree(countFrequency(arr))
     val hash = HashMap.empty[T, List[Boolean]]
-
     def levelOrder(root: Option[Node[HuffmanFrequency[T]]]) : Unit = {
       val queue = new Queue[Pair[Option[Node[HuffmanFrequency[T]]], ListBuffer[Boolean]]]
       queue.enqueue((root, new ListBuffer[Boolean]))
-
       while (!queue.isEmpty) {
         val curr = queue.dequeue()
-
         if (curr._1.get.left == None && curr._1.get.right == None) {
           val list = curr._2.clone
           hash(curr._1.get.value.element.get) = list.toList
@@ -85,29 +87,5 @@ object Huffman {
 
     levelOrder(tree)
     return hash.toMap
-  }
-
-  def reconstructTree[T](table: Map[T, List[Boolean]]) : Option[Node[HuffmanFrequency[T]]] = {
-    val root = Option(new Node[HuffmanFrequency[T]](new HuffmanFrequency[T](0)))
-    table foreach {
-      keyValue => {
-        var curr = root.get
-        keyValue._2 foreach {
-          status => {
-            if (status) {
-              if (curr.right == None)
-                curr.right = Option(new Node[HuffmanFrequency[T]](new HuffmanFrequency[T](0, Option(keyValue._1))))
-              curr = curr.right.get
-            }
-            else {
-              if (curr.left == None)
-                curr.left = Option(new Node[HuffmanFrequency[T]](new HuffmanFrequency[T](0, Option(keyValue._1))))
-              curr = curr.left.get
-            }
-          }
-        }  
-      }
-    }
-    root
   }
 }

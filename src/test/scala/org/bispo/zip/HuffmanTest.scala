@@ -58,37 +58,4 @@ class HuffmanTest extends FlatSpec {
     assert(table('d') === List(false, false, true))
     assert(table('e') === List(true, false))
   }
-
-  "Application" should "reconstruct the Tree based on the huffman table" in {
-    val arr: Array[Char] = Array('a', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'c' , 'c', 'c', 'c', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'e', 'e', 'e',
-      'e', 'e', 'e')
-
-    val table = huffmanTable(arr)
-    assert(table('a') === List(false, false, false))
-    assert(table('b') === List(true, true))
-    assert(table('c') === List(false, true))
-    assert(table('d') === List(false, false, true))
-    assert(table('e') === List(true, false))
-
-    val tree = reconstructTree(table)
-    assert(tree.get.left.get.left.get.left.get.value.element.get === 'a')
-    assert(tree.get.left.get.left.get.left.get.left === None)
-    assert(tree.get.left.get.left.get.left.get.right === None)
-
-    assert(tree.get.right.get.right.get.value.element.get === 'b')
-    assert(tree.get.right.get.right.get.left === None)
-    assert(tree.get.right.get.right.get.right === None)
-
-    assert(tree.get.left.get.right.get.value.element.get === 'c')
-    assert(tree.get.left.get.right.get.left === None)
-    assert(tree.get.left.get.right.get.right === None)
-
-    assert(tree.get.left.get.left.get.right.get.value.element.get === 'd')
-    assert(tree.get.left.get.left.get.right.get.left === None)
-    assert(tree.get.left.get.left.get.right.get.right === None)
-
-    assert(tree.get.right.get.left.get.value.element.get === 'e')
-    assert(tree.get.right.get.left.get.left === None)
-    assert(tree.get.right.get.left.get.right === None)
-  }
 }
